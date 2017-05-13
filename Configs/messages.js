@@ -5,11 +5,17 @@
 
 // All the Error messages will be placesd here along with there status code
 
+
 module.exports = {
 
   AUTHENTICATION_FAILED:{
     code: 400,
     message :'Authentication failed. Wrong credentials.',
+    success: false
+  },
+  EMAIL_ALREADY_EXISIT:{
+    code: 400,
+    message :'Email address already exisit. Cannot signup',
     success: false
   },
   SUCCESSFUL_LOGIN: {
@@ -42,9 +48,19 @@ module.exports = {
     message: "you are not authorized to complete this action.",
     success : false
   },
+  INVALID_JWT: {
+    code: 403,
+    message: "Either token has expired or is invalid. Please login again.",
+    success : false
+  },
   BAD_REQUEST:{
     code:400,
     message : 'request invalid.',
+    success: false
+  },
+  DATA_NOT_FOUND:{
+    code:404,
+    message : 'required data not found',
     success: false
   },
   IN_COMPLETE_REQUEST:{

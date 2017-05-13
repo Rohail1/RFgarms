@@ -6,7 +6,7 @@ function dbConnections (config,mongoose) {
   mongoose.Promise = global.Promise;
   db.on('error', console.error.bind(console,'Error in Connection :: Cannot Connect to ' +config.db.name));
   db.once('open',function () {
-    console.log('Successfully Connected to Mongo Database ',config.db.name);
+    console.log('Successfully Connected to Mongo Database',config.db.name);
   });
   return db;
 }

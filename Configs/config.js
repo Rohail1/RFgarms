@@ -11,10 +11,11 @@ const configurations = {
   development : {
     port : 3000,
     rootPath : rootPath,
+    jwtSecret : 'jwtSceretString',
     db: {
-      name : "db Name",
+      name : "RFGrams",
       mongo : {
-        connectionString : process.env.MONGOPATH || "mongodb://localhost:27017/dbName",
+        connectionString : process.env.MONGOPATH || "mongodb://localhost:27017/rfgrams",
         username : process.env.MONGOUSERNAME || '',
         password : process.env.MONGOPASSWORD || ''
       }
@@ -24,18 +25,21 @@ const configurations = {
     VALIDATOR_DIR : '/Validators',
     API_PREFIX : {
       API : '/api',
-      AUTH : '/auth'
+      AUTH : '/auth',
+      ADMIN : '/admin',
+      PUBLIC : '/public'
     }
   },
 
   production : {
     port : process.env.PORT || 3000,
     rootPath : rootPath,
+    jwtSecret : 'jwtSceretString',
     logStyle : 'combined',
     db: {
-      name : "db Name",
+      name : "RFGrams",
       mongo : {
-        connectionString : process.env.MONGOPATH || "mongodb://localhost:27017/dbName",
+        connectionString : process.env.MONGOPATH || "mongodb://localhost:27017/rfgrams",
         username : process.env.MONGOUSERNAME || '',
         password : process.env.MONGOPASSWORD || ''
       }
@@ -44,24 +48,29 @@ const configurations = {
     VALIDATOR_DIR : '/Validators',
     API_PREFIX : {
       API : '/api',
-      AUTH : '/auth'
+      AUTH : '/auth',
+      ADMIN : '/admin',
+      PUBLIC : '/public'
     }
   },
 
   testing : {
     port : process.env.PORT || 3000,
     rootPath : rootPath,
+    jwtSecret : 'jwtSceretString',
     logStyle : 'combined',
     API_DIR : '/APIs',
     VALIDATOR_DIR : '/Validators',
     API_PREFIX : {
       API : '/api',
-      AUTH : '/auth'
+      AUTH : '/auth',
+      ADMIN : '/admin',
+      PUBLIC : '/public'
     },
     db: {
-      name : "db Name",
+      name : "RFGrams",
       mongo : {
-        connectionString : process.env.MONGOPATH || "mongodb://localhost:27017/dbName",
+        connectionString : process.env.MONGOPATH || "mongodb://localhost:27017/rfgrams",
         username : process.env.MONGOUSERNAME || '',
         password : process.env.MONGOPASSWORD || ''
       }

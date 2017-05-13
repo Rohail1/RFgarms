@@ -3,93 +3,189 @@
  */
 
 
-module.exports.setupFunction = function ({config,messages,models,co},helper,middlewares,validator) {
+module.exports.setupFunction = function ({config,messages,models,jwt},helper,middlewares,validator) {
 
-  function getUsers(req,res) {
+  const adminSignUp = async (req,res) => {
 
     try {
-      models.User.find({})
-        .then(function (data) {
-          return helper.sendResponse(res,messages.SUCCESSFUL,data)
-        }).catch(function (error) {
-        return helper.sendError(res,error)
-      })
-    }catch (ex){
-      return helper.sendError(res,ex)
-    }
-  }
-
-  function* postUser(req,res) {
-    try {
-      let validated = yield validator.validatePostUsers(req.inputs);
+      let validated = await validator.adminSignupValidator(req.inputs);
       if(validated.error)
         throw new Error(validated.error.message);
-      let user = new models.User();
+      let userCount = await models.Admins.count({email: req.inputs.email.toLowerCase()});
+      if(userCount > 0)
+        return helper.sendResponse(res,messages.EMAIL_ALREADY_EXISIT);
+      let salt = await helper.generateSalt(10);
+      let password = await helper.generateHash(req.inputs.password,salt);
+      let user = new models.Admins();
       user._id = helper.generateObjectId();
-      user.firstName = req.inputs.firstName;
-      user.lastName = req.inputs.lastName;
-      yield user.save();
+      user.firstname = req.inputs.firstname;
+      user.lastname = req.inputs.lastname;
+      user.email = req.inputs.email.toLowerCase();
+      user.designation = req.inputs.designation;
+      user.role = req.inputs.role;
+      user.password = password;
+      user.salt = salt;
+      let payload = {
+        _id : user._id,
+        email : user.email
+      };
+      user.jwt = jwt.sign(payload,config.jwtSecret);
+      await user.save();
       return helper.sendResponse(res,messages.SUCCESSFUL,user);
-    } catch (ex){
+    }
+    catch (ex){
       return helper.sendError(res,ex)
     }
-  }
+  };
 
-  function* updateUser(req,res) {
+  const login = async (req,res) => {
     try {
-      let validated = yield validator.validateUpdateUsers(req.inputs);
+      let validated = await validator.loginValidator(req.inputs);
       if(validated.error)
         throw new Error(validated.error.message);
-      let user = yield models.User.findOne({_id : helper.generateObjectId(req.inputs.userId)});
-      user.firstName = req.inputs.firstName;
-      yield user.save();
-      return helper.sendResponse(res,messages.SUCCESSFUL,user);
-    } catch (ex){
+      let user = await models.Admins.findOne({email: req.inputs.email.toLowerCase()});
+      if(!user)
+        return helper.sendResponse(res,messages.AUTHENTICATION_FAILED);
+      let isAuthenticated = await helper.authenticatePassword(req.inputs.password,user.password);
+      if(!isAuthenticated)
+        return helper.sendResponse(res,messages.AUTHENTICATION_FAILED);
+      let payload = {
+        _id : user._id,
+        email : user.email
+      };
+      user.jwt = jwt.sign(payload,config.jwtSecret);
+      await user.save();
+      let dataToSend = helper.copyObjects(user,['password','salt']);
+      return helper.sendResponse(res,messages.SUCCESSFUL,dataToSend);
+    }
+    catch (ex){
       return helper.sendError(res,ex)
     }
-  }
+  };
 
-  function* deleteUser(req,res) {
+  const childRegistration = async (req,res) => {
+
     try {
-      let validated = yield validator.validateUpdateUsers(req.inputs);
+      let validated = await validator.childRegistrationValidator(req.inputs);
       if(validated.error)
         throw new Error(validated.error.message);
-      yield models.User.remove({_id : helper.generateObjectId(req.inputs.userId)});
-      return helper.sendResponse(res,messages.SUCCESSFUL);
-    } catch (ex){
+
+      let child = new models.Child();
+      child._id = helper.generateObjectId();
+      child.rfid = helper.generateObjectId();
+      child.firstname = req.inputs.firstname;
+      child.lastname = req.inputs.lastname;
+      child.class = req.inputs.class;
+      child.age = req.inputs.age;
+      await child.save();
+      return helper.sendResponse(res,messages.SUCCESSFUL,child);
+    }
+    catch (ex){
       return helper.sendError(res,ex)
     }
-  }
+  };
+
+  const parentsSignUp = async (req,res) => {
+
+    try {
+      let validated = await validator.parentSignupValidator(req.inputs);
+      if(validated.error)
+        throw new Error(validated.error.message);
+      let userCount = await models.Parent.count({email: req.inputs.email.toLowerCase()});
+      if(userCount > 0)
+        return helper.sendResponse(res,messages.EMAIL_ALREADY_EXISIT);
+      let salt = await helper.generateSalt(10);
+      let password = await helper.generateHash(req.inputs.password,salt);
+      let parent = new models.Parent();
+      parent._id = helper.generateObjectId();
+      parent.firstname = req.inputs.firstname;
+      parent.lastname = req.inputs.lastname;
+      parent.email = req.inputs.email.toLowerCase();
+      parent.password = password;
+      parent.salt = salt;
+      parent.children = req.inputs.children;
+      let payload = {
+        _id : parent._id,
+        email : parent.email
+      };
+      parent.jwt = jwt.sign(payload,config.jwtSecret);
+      let childQuery = {
+        _id : {
+          $in :req.inputs.children
+        }
+      };
+      let updateQuery = {
+        $set  : {
+          parentId : parent._id
+        }
+      };
+      await Promise.all([
+        parent.save(),
+        models.Child.update(childQuery,updateQuery)
+      ]);
+      return helper.sendResponse(res,messages.SUCCESSFUL,parent);
+    }
+    catch (ex){
+      return helper.sendError(res,ex)
+    }
+  };
+
+  const parentsFormMetaData = async (req,res) => {
+
+    try {
+      let query = {
+        parentId: { $exists: false}
+      };
+      let projection = {
+        firstname : 1,
+        lastname : 1
+      };
+      let children = await models.Child.find(query,projection);
+      if(!children)
+        return helper.sendResponse(res,messages.SUCCESSFUL,[]);
+      return helper.sendResponse(res,messages.SUCCESSFUL,children);
+    }
+    catch (ex){
+      return helper.sendError(res,ex)
+    }
+  };
 
   module.exports.APIs = {
 
-    getUsers : {
-      route : '/users',
-      method : 'GET',
-      prefix : config.API_PREFIX.API,
-      middlewares : [middlewares.dummyRouteLevelMiddleware2],
-      handler : getUsers
-    },
-    postUser : {
-      route : '/users',
+    signup : {
+      route : '/signup',
       method : 'POST',
-      prefix : config.API_PREFIX.API,
-      middlewares : [middlewares.dummyRouteLevelMiddleware2,middlewares.dummyRouteLevelMiddleware1], //FIFO order of middleware
-      handler : co.wrap(postUser)
+      prefix : config.API_PREFIX.AUTH,
+      middlewares : [],
+      handler : adminSignUp
     },
-    updateUser : {
-      route : '/users/:userId',
-      method : 'PUT',
-      prefix : config.API_PREFIX.API,
-      middlewares : [middlewares.getParams], //FIFO order of middleware
-      handler : co.wrap(updateUser)
+    login : {
+      route : '/login',
+      method : 'POST',
+      prefix : config.API_PREFIX.AUTH,
+      middlewares : [],
+      handler : login
     },
-    deleteUser : {
-      route : '/users/:userId',
-      method : 'DELETE',
-      prefix : config.API_PREFIX.API,
-      middlewares : [middlewares.getParams], //FIFO order of middleware
-      handler : co.wrap(deleteUser)
+    childRegistration : {
+      route : '/child',
+      method : 'POST',
+      prefix : config.API_PREFIX.ADMIN,
+      middlewares : [],
+      handler : childRegistration
+    },
+    parentsSignUp : {
+      route : '/parents',
+      method : 'POST',
+      prefix : config.API_PREFIX.ADMIN,
+      middlewares : [],
+      handler : parentsSignUp
+    },
+    parentsFormMetaData : {
+      route : '/parents/meta',
+      method : 'GET',
+      prefix : config.API_PREFIX.ADMIN,
+      middlewares : [],
+      handler : parentsFormMetaData
     }
 
   };

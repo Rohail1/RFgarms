@@ -1,6 +1,7 @@
 /**
- * Created by Rohail Najam on 2/6/2017.
+ * Created by Rohail on 5/13/2017.
  */
+
 
 module.exports = function(Schema){
 
@@ -8,10 +9,13 @@ module.exports = function(Schema){
     _id : {
       type : Schema.Types.ObjectId,
     },
-    firstName : {
+    name : {
       type : String
     },
-    lastName : {
+    roomType : {
+      type : String
+    },
+    floor : {
       type : String
     }
   },{
