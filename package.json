@@ -1,7 +1,7 @@
 {
-  "name": "nodejs-boilerplate",
+  "name": "rfgrams",
   "version": "1.0.0",
-  "description": "A Node.js boilerplate for future nodejs projects",
+  "description": "A Project made at InvenD",
   "main": "server.js",
   "scripts": {
     "start": "node server",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/Rohail1/nodejs-boilerplate.git"
+    "url": "git+ssh://git@github.com/Rohail1/RFgarms.git"
   },
   "keywords": [
     "nodejs",
@@ -26,9 +26,9 @@
   "author": "Rohail Najam <rohail_najam@hotmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Rohail1/nodejs-boilerplate/issues"
+    "url": "https://github.com/Rohail1/RFgarms/issues"
   },
-  "homepage": "https://github.com/Rohail1/nodejs-boilerplate#readme",
+  "homepage": "https://github.com/Rohail1/RFgarms#readme",
   "dependencies": {
     "body-parser": "^1.16.1",
     "co": "^4.6.0",
