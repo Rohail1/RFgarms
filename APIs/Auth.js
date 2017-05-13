@@ -130,6 +130,26 @@ module.exports.setupFunction = function ({config,messages,models,jwt},helper,mid
     }
   };
 
+  const parentsFormMetaData = async (req,res) => {
+
+    try {
+      let query = {
+        parentId: { $exists: false}
+      };
+      let projection = {
+        firstname : 1,
+        lastname : 1
+      };
+      let children = await models.Child.find(query,projection);
+      if(!children)
+        return helper.sendResponse(res,messages.SUCCESSFUL,[]);
+      return helper.sendResponse(res,messages.SUCCESSFUL,children);
+    }
+    catch (ex){
+      return helper.sendError(res,ex)
+    }
+  };
+
   module.exports.APIs = {
 
     signup : {
@@ -159,6 +179,13 @@ module.exports.setupFunction = function ({config,messages,models,jwt},helper,mid
       prefix : config.API_PREFIX.ADMIN,
       middlewares : [],
       handler : parentsSignUp
+    },
+    parentsFormMetaData : {
+      route : '/parents/meta',
+      method : 'GET',
+      prefix : config.API_PREFIX.ADMIN,
+      middlewares : [],
+      handler : parentsFormMetaData
     }
 
   };

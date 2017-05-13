@@ -5,7 +5,7 @@
 const express = require('express');
 let app = express();
 app.locals.env = process.env.NODE_ENV = process.env.NODE_ENV || "development";
-app.locals.title = "Project Name";
+app.locals.title = "RFGrams";
 const config = require('./configs/config')(app.locals.env);
 const dependencies = require('./Libs/dependencies')(app,express,config);
 require('./Configs/express')(dependencies);
