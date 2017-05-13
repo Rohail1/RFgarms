@@ -8,24 +8,23 @@ module.exports = function(Schema){
     _id : {
       type : Schema.Types.ObjectId,
     },
-    rfid : {
+    childId : {
       type : Schema.Types.ObjectId,
+      ref : "Child"
     },
-    firstname : {
-      type : String
-    },
-    lastname : {
-      type : String
-    },
-    age : {
-      type : Number
-    },
-    class : {
-      type : String
-    },
-    parentId : {
+    roomId : {
       type : Schema.Types.ObjectId,
-      ref : "Parent"
+      ref : "Room"
+    },
+    timeStamp : {
+      type : String
+    },
+    logType : {
+      type : String
+    },
+    period : {
+      type : Schema.Types.ObjectId,
+      ref : "TimeTable"
     }
   },{
     timeStamp : true

@@ -9,6 +9,8 @@ module.exports = function (mongoose) {
   let Parent = require('./parents')(Schema);
   let Child = require('./children')(Schema);
   let Room = require('./rooms')(Schema);
+  let ActivityLog = require('./activitylog')(Schema);
+  let TimeTable = require('./timetable')(Schema);
 
 // Associating Models with Schemas
 
@@ -16,6 +18,8 @@ module.exports = function (mongoose) {
   models.Parent = mongoose.model('Parent', Parent);
   models.Child = mongoose.model('Child', Child);
   models.Room = mongoose.model('Room', Room);
+  models.ActivityLog = mongoose.model('ActivityLog', ActivityLog);
+  models.TimeTable = mongoose.model('TimeTable', TimeTable);
 
   return models;
 

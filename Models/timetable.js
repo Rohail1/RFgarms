@@ -8,30 +8,22 @@ module.exports = function(Schema){
     _id : {
       type : Schema.Types.ObjectId,
     },
-    firstname : {
+    day : {
       type : String
     },
-    lastname : {
+    class : {
       type : String
     },
-    email : {
+    startTime : {
       type : String
     },
-    password : {
+    endTime : {
       type : String
     },
-    salt : {
-      type : String
-    },
-    jwt : {
-      type : String
-    },
-    children : [
-      {
-        type: Schema.Types.ObjectId,
-        ref : "Child"
-      }
-    ]
+    roomId : {
+      type : Schema.Types.ObjectId,
+      ref : "Room"
+    }
   },{
     timeStamp : true
   });
