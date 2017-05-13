@@ -10,7 +10,9 @@ module.exports = function ({joi}) {
       email:joi.string().email().required().error(new Error('Please enter valid email')),
       password: joi.string().required().error(new Error('Please enter a password')),
       firstname: joi.string().token().required().error(new Error('Please enter your firstname')),
-      lastname: joi.string().token().required().error(new Error('Please enter your lastname'))
+      lastname: joi.string().token().required().error(new Error('Please enter your lastname')),
+      role: joi.string().token().required().error(new Error('Please enter your role')),
+      designation: joi.string().token().required().error(new Error('Please enter your designation'))
     });
     try {
       return joi.validate(input,schema);
@@ -35,8 +37,10 @@ module.exports = function ({joi}) {
 
   const childRegistrationValidator = (input) => {
     let schema = joi.object().keys({
-      firstname: joi.string().token().required().error(new Error('Please enter your firstname')),
-      lastname: joi.string().token().required().error(new Error('Please enter your lastname'))
+      firstname: joi.string().required().error(new Error('Please enter your firstname')),
+      lastname: joi.string().required().error(new Error('Please enter your lastname')),
+      class: joi.string().required().error(new Error('Please enter class of the child')),
+      age: joi.number().required().error(new Error('Please enter age of the child'))
     });
     try {
       return joi.validate(input,schema);
@@ -50,8 +54,8 @@ module.exports = function ({joi}) {
     let schema = joi.object().keys({
       email:joi.string().email().required().error(new Error('Please enter valid email')),
       password: joi.string().required().error(new Error('Please enter a password')),
-      firstname: joi.string().token().required().error(new Error('Please enter your firstname')),
-      lastname: joi.string().token().required().error(new Error('Please enter your lastname')),
+      firstname: joi.string().required().error(new Error('Please enter your firstname')),
+      lastname: joi.string().required().error(new Error('Please enter your lastname')),
       children: joi.array().items(joi.string().required()).min(1).unique().required().error(new Error('Please enter a child'))
     });
     try {

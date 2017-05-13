@@ -13,7 +13,7 @@ module.exports = function (mongoose) {
 
   models.Admins = mongoose.model('Admins', Admins);
   models.Parent = mongoose.model('Parent', Parent);
-  models.Child = mongoose.model('Admin', Child);
+  models.Child = mongoose.model('Child', Child);
 
   return models;
 

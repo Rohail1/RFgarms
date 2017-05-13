@@ -3,7 +3,7 @@
  */
 
 
-module.exports = function ({mongoose}) {
+module.exports = function ({mongoose},helper) {
 
   // This middleware gets Params and add them in req.inputs
 

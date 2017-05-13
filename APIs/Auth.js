@@ -11,7 +11,7 @@ module.exports.setupFunction = function ({config,messages,models,jwt},helper,mid
       let validated = await validator.adminSignupValidator(req.inputs);
       if(validated.error)
         throw new Error(validated.error.message);
-      let userCount = await models.Admins.count({email: req.inputs.email});
+      let userCount = await models.Admins.count({email: req.inputs.email.toLowerCase()});
       if(userCount > 0)
         return helper.sendResponse(res,messages.EMAIL_ALREADY_EXISIT);
       let salt = await helper.generateSalt(10);
@@ -20,7 +20,9 @@ module.exports.setupFunction = function ({config,messages,models,jwt},helper,mid
       user._id = helper.generateObjectId();
       user.firstname = req.inputs.firstname;
       user.lastname = req.inputs.lastname;
-      user.email = req.inputs.email;
+      user.email = req.inputs.email.toLowerCase();
+      user.designation = req.inputs.designation;
+      user.role = req.inputs.role;
       user.password = password;
       user.salt = salt;
       let payload = {
@@ -41,7 +43,7 @@ module.exports.setupFunction = function ({config,messages,models,jwt},helper,mid
       let validated = await validator.loginValidator(req.inputs);
       if(validated.error)
         throw new Error(validated.error.message);
-      let user = await models.Admin.findOne({email: req.inputs.email});
+      let user = await models.Admins.findOne({email: req.inputs.email.toLowerCase()});
       if(!user)
         return helper.sendResponse(res,messages.AUTHENTICATION_FAILED);
       let isAuthenticated = await helper.authenticatePassword(req.inputs.password,user.password);
@@ -86,28 +88,42 @@ module.exports.setupFunction = function ({config,messages,models,jwt},helper,mid
   const parentsSignUp = async (req,res) => {
 
     try {
-      let validated = await validator.adminSignupValidator(req.inputs);
+      let validated = await validator.parentSignupValidator(req.inputs);
       if(validated.error)
         throw new Error(validated.error.message);
-      let userCount = await models.Admins.count({email: req.inputs.email});
+      let userCount = await models.Parent.count({email: req.inputs.email.toLowerCase()});
       if(userCount > 0)
         return helper.sendResponse(res,messages.EMAIL_ALREADY_EXISIT);
       let salt = await helper.generateSalt(10);
       let password = await helper.generateHash(req.inputs.password,salt);
-      let user = new models.Admins();
-      user._id = helper.generateObjectId();
-      user.firstname = req.inputs.firstname;
-      user.lastname = req.inputs.lastname;
-      user.email = req.inputs.email;
-      user.password = password;
-      user.salt = salt;
+      let parent = new models.Parent();
+      parent._id = helper.generateObjectId();
+      parent.firstname = req.inputs.firstname;
+      parent.lastname = req.inputs.lastname;
+      parent.email = req.inputs.email.toLowerCase();
+      parent.password = password;
+      parent.salt = salt;
+      parent.children = req.inputs.children;
       let payload = {
-        _id : user._id,
-        email : user.email
+        _id : parent._id,
+        email : parent.email
       };
-      user.jwt = jwt.sign(payload,config.jwtSecret);
-      await user.save();
-      return helper.sendResponse(res,messages.SUCCESSFUL,user);
+      parent.jwt = jwt.sign(payload,config.jwtSecret);
+      let childQuery = {
+        _id : {
+          $in :req.inputs.children
+        }
+      };
+      let updateQuery = {
+        $set  : {
+          parentId : parent._id
+        }
+      };
+      await Promise.all([
+        parent.save(),
+        models.Child.update(childQuery,updateQuery)
+      ]);
+      return helper.sendResponse(res,messages.SUCCESSFUL,parent);
     }
     catch (ex){
       return helper.sendError(res,ex)
@@ -121,14 +137,14 @@ module.exports.setupFunction = function ({config,messages,models,jwt},helper,mid
       method : 'POST',
       prefix : config.API_PREFIX.AUTH,
       middlewares : [],
-      handler : AdminSignUp
+      handler : adminSignUp
     },
     login : {
       route : '/login',
       method : 'POST',
       prefix : config.API_PREFIX.AUTH,
       middlewares : [],
-      handler : adminSignUp
+      handler : login
     },
     childRegistration : {
       route : '/child',
@@ -136,6 +152,13 @@ module.exports.setupFunction = function ({config,messages,models,jwt},helper,mid
       prefix : config.API_PREFIX.ADMIN,
       middlewares : [],
       handler : childRegistration
+    },
+    parentsSignUp : {
+      route : '/parents',
+      method : 'POST',
+      prefix : config.API_PREFIX.ADMIN,
+      middlewares : [],
+      handler : parentsSignUp
     }
 
   };

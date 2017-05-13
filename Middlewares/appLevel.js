@@ -3,7 +3,7 @@
  */
 
 
-module.exports = function ({mongoose}) {
+module.exports = function ({messages,jwt,models,config},helpers) {
 
   // This middleware get all the inputs from params ,query ,body and place them in req.inputs
   const getInputs =  (req, res, next) => {
@@ -24,9 +24,9 @@ module.exports = function ({mongoose}) {
 
       if(helpers.isPublicRoute(req.path))
         return next();
-      let token = req.headers['instaclone-token'];
+      let token = req.headers['rfgram-token'];
       let decodedToken = jwt.verify(token, config.jwtSecret);
-      let user = await models.User.findOne({_id : decodedToken._id});
+      let user = await models.Admins.findOne({_id : decodedToken._id});
       if(!user)
         return helpers.sendResponse(res,messages.INVALID_JWT);
       req.userDetails = user;
@@ -35,8 +35,6 @@ module.exports = function ({mongoose}) {
       return helpers.sendResponse(res,messages.INVALID_JWT)
     }
   };
-
-
 
   // Array Order of the middleware Matters so we follow FIFO
 

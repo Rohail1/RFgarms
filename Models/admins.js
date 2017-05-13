@@ -17,6 +17,12 @@ module.exports = function(Schema){
     email : {
       type : String
     },
+    role : {
+      type : String
+    },
+    designation : {
+      type : String
+    },
     password : {
       type : String
     },
