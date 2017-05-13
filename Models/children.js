@@ -16,6 +16,15 @@ module.exports = function(Schema){
     },
     lastname : {
       type : String
+    },
+    age : {
+      type : Number
+    },
+    class : {
+      type : String
+    },
+    parentId : {
+      type : Schema.Types.ObjectId
     }
   },{
     timeStamp : true

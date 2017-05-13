@@ -5,18 +5,18 @@
 
 module.exports.setupFunction = function ({config,messages,models,jwt},helper,middlewares,validator) {
 
-  const signup = async (req,res) => {
+  const adminSignUp = async (req,res) => {
 
     try {
-      let validated = await validator.signupValidator(req.inputs);
+      let validated = await validator.adminSignupValidator(req.inputs);
       if(validated.error)
         throw new Error(validated.error.message);
-      let userCount = await models.User.count({email: req.inputs.email});
+      let userCount = await models.Admins.count({email: req.inputs.email});
       if(userCount > 0)
         return helper.sendResponse(res,messages.EMAIL_ALREADY_EXISIT);
       let salt = await helper.generateSalt(10);
       let password = await helper.generateHash(req.inputs.password,salt);
-      let user = new models.Admin();
+      let user = new models.Admins();
       user._id = helper.generateObjectId();
       user.firstname = req.inputs.firstname;
       user.lastname = req.inputs.lastname;
@@ -61,6 +61,59 @@ module.exports.setupFunction = function ({config,messages,models,jwt},helper,mid
     }
   };
 
+  const childRegistration = async (req,res) => {
+
+    try {
+      let validated = await validator.childRegistrationValidator(req.inputs);
+      if(validated.error)
+        throw new Error(validated.error.message);
+
+      let child = new models.Child();
+      child._id = helper.generateObjectId();
+      child.rfid = helper.generateObjectId();
+      child.firstname = req.inputs.firstname;
+      child.lastname = req.inputs.lastname;
+      child.class = req.inputs.class;
+      child.age = req.inputs.age;
+      await child.save();
+      return helper.sendResponse(res,messages.SUCCESSFUL,child);
+    }
+    catch (ex){
+      return helper.sendError(res,ex)
+    }
+  };
+
+  const parentsSignUp = async (req,res) => {
+
+    try {
+      let validated = await validator.adminSignupValidator(req.inputs);
+      if(validated.error)
+        throw new Error(validated.error.message);
+      let userCount = await models.Admins.count({email: req.inputs.email});
+      if(userCount > 0)
+        return helper.sendResponse(res,messages.EMAIL_ALREADY_EXISIT);
+      let salt = await helper.generateSalt(10);
+      let password = await helper.generateHash(req.inputs.password,salt);
+      let user = new models.Admins();
+      user._id = helper.generateObjectId();
+      user.firstname = req.inputs.firstname;
+      user.lastname = req.inputs.lastname;
+      user.email = req.inputs.email;
+      user.password = password;
+      user.salt = salt;
+      let payload = {
+        _id : user._id,
+        email : user.email
+      };
+      user.jwt = jwt.sign(payload,config.jwtSecret);
+      await user.save();
+      return helper.sendResponse(res,messages.SUCCESSFUL,user);
+    }
+    catch (ex){
+      return helper.sendError(res,ex)
+    }
+  };
+
   module.exports.APIs = {
 
     signup : {
@@ -68,14 +121,21 @@ module.exports.setupFunction = function ({config,messages,models,jwt},helper,mid
       method : 'POST',
       prefix : config.API_PREFIX.AUTH,
       middlewares : [],
-      handler : signup
+      handler : AdminSignUp
     },
     login : {
       route : '/login',
       method : 'POST',
       prefix : config.API_PREFIX.AUTH,
       middlewares : [],
-      handler : login
+      handler : adminSignUp
+    },
+    childRegistration : {
+      route : '/child',
+      method : 'POST',
+      prefix : config.API_PREFIX.ADMIN,
+      middlewares : [],
+      handler : childRegistration
     }
 
   };
