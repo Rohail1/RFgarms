@@ -5,10 +5,18 @@
 
 exports = {
 
-  mediaType : {
-    photo : "photo",
-    video : "video"
-  },
-  cloudinaryBaseUrl  : "http://res.cloudinary.com"
+  roomData : {
+    roomType : {
+      ROOM : "class",
+      LAB : "lab",
+      AUDITORIUM: "auditorium",
+      PLAYGROUND: "playground"
+    },
+    floors : {
+      ground : "ground floor",
+      first : "First floor",
+      second : "Second floor"
+    }
+  }
 
 };
