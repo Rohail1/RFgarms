@@ -3,93 +3,79 @@
  */
 
 
-module.exports.setupFunction = function ({config,messages,models,co},helper,middlewares,validator) {
+module.exports.setupFunction = function ({config,messages,models,jwt},helper,middlewares,validator) {
 
-  function getUsers(req,res) {
+  const signup = async (req,res) => {
 
     try {
-      models.User.find({})
-        .then(function (data) {
-          return helper.sendResponse(res,messages.SUCCESSFUL,data)
-        }).catch(function (error) {
-        return helper.sendError(res,error)
-      })
-    }catch (ex){
-      return helper.sendError(res,ex)
-    }
-  }
-
-  function* postUser(req,res) {
-    try {
-      let validated = yield validator.validatePostUsers(req.inputs);
+      let validated = await validator.signupValidator(req.inputs);
       if(validated.error)
         throw new Error(validated.error.message);
-      let user = new models.User();
+      let userCount = await models.User.count({email: req.inputs.email});
+      if(userCount > 0)
+        return helper.sendResponse(res,messages.EMAIL_ALREADY_EXISIT);
+      let salt = await helper.generateSalt(10);
+      let password = await helper.generateHash(req.inputs.password,salt);
+      let user = new models.Admin();
       user._id = helper.generateObjectId();
-      user.firstName = req.inputs.firstName;
-      user.lastName = req.inputs.lastName;
-      yield user.save();
+      user.firstname = req.inputs.firstname;
+      user.lastname = req.inputs.lastname;
+      user.email = req.inputs.email;
+      user.password = password;
+      user.salt = salt;
+      let payload = {
+        _id : user._id,
+        email : user.email
+      };
+      user.jwt = jwt.sign(payload,config.jwtSecret);
+      await user.save();
       return helper.sendResponse(res,messages.SUCCESSFUL,user);
-    } catch (ex){
+    }
+    catch (ex){
       return helper.sendError(res,ex)
     }
-  }
+  };
 
-  function* updateUser(req,res) {
+  const login = async (req,res) => {
     try {
-      let validated = yield validator.validateUpdateUsers(req.inputs);
+      let validated = await validator.loginValidator(req.inputs);
       if(validated.error)
         throw new Error(validated.error.message);
-      let user = yield models.User.findOne({_id : helper.generateObjectId(req.inputs.userId)});
-      user.firstName = req.inputs.firstName;
-      yield user.save();
-      return helper.sendResponse(res,messages.SUCCESSFUL,user);
-    } catch (ex){
+      let user = await models.Admin.findOne({email: req.inputs.email});
+      if(!user)
+        return helper.sendResponse(res,messages.AUTHENTICATION_FAILED);
+      let isAuthenticated = await helper.authenticatePassword(req.inputs.password,user.password);
+      if(!isAuthenticated)
+        return helper.sendResponse(res,messages.AUTHENTICATION_FAILED);
+      let payload = {
+        _id : user._id,
+        email : user.email
+      };
+      user.jwt = jwt.sign(payload,config.jwtSecret);
+      await user.save();
+      let dataToSend = helper.copyObjects(user,['password','salt']);
+      return helper.sendResponse(res,messages.SUCCESSFUL,dataToSend);
+    }
+    catch (ex){
       return helper.sendError(res,ex)
     }
-  }
-
-  function* deleteUser(req,res) {
-    try {
-      let validated = yield validator.validateUpdateUsers(req.inputs);
-      if(validated.error)
-        throw new Error(validated.error.message);
-      yield models.User.remove({_id : helper.generateObjectId(req.inputs.userId)});
-      return helper.sendResponse(res,messages.SUCCESSFUL);
-    } catch (ex){
-      return helper.sendError(res,ex)
-    }
-  }
+  };
 
   module.exports.APIs = {
 
-    getUsers : {
-      route : '/users',
-      method : 'GET',
-      prefix : config.API_PREFIX.API,
-      middlewares : [middlewares.dummyRouteLevelMiddleware2],
-      handler : getUsers
-    },
-    postUser : {
-      route : '/users',
+    signup : {
+      route : '/signup',
       method : 'POST',
-      prefix : config.API_PREFIX.API,
-      middlewares : [middlewares.dummyRouteLevelMiddleware2,middlewares.dummyRouteLevelMiddleware1], //FIFO order of middleware
-      handler : co.wrap(postUser)
+      prefix : config.API_PREFIX.AUTH,
+      middlewares : [],
+      handler : signup
     },
-    updateUser : {
-      route : '/users/:userId',
-      method : 'PUT',
-      prefix : config.API_PREFIX.API,
-      middlewares : [middlewares.getParams], //FIFO order of middleware
-      handler : co.wrap(updateUser)
-    },
-    deleteUser : {
-      route : '/users/:userId',
-      method : 'DELETE',
-      prefix : config.API_PREFIX.API,
-      middlewares : [middlewares.getParams], //FIFO order of middleware
-      handler : co.wrap(deleteUser)
+    login : {
+      route : '/login',
+      method : 'POST',
+      prefix : config.API_PREFIX.AUTH,
+      middlewares : [],
+      handler : login
     }
 
   };

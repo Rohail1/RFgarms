@@ -10,19 +10,23 @@ module.exports = function (app, express,config) {
 
   return {
     app : app,
-    express : express,
-    config : config,
-    morgan :require('morgan'),
+    bcrypt : require('bcrypt'),
     bodyParser :require('body-parser'),
+    config : config,
     cors : require('cors'),
-    mongoose : mongoose,
-    fs : require('fs-extra'),
     dbConnection : dbConnection,
-    models : models,
+    enums : require('../Configs/enums'),
+    express : express,
+    fs : require('fs-extra'),
+    joi : require('joi'),
+    jwt : require('jsonwebtoken'),
+    jwtWhiteSheet : require('../Configs/jwtwhitesheet'),
     messages : require('../Configs/messages'),
+    models : models,
+    mongoose : mongoose,
+    morgan :require('morgan'),
     path : require('path'),
-    co : require('co'),
-    joi : require('joi')
+
   }
 
 };
