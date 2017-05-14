@@ -7,7 +7,10 @@ module.exports.setupFunction = function ({config,messages,models,enums},helper,m
   const getChildDetail = async (req,res) => {
 
     try {
-      let child = await models.Child.findOne({_id : req.inputs.childId});
+      let child = await models.Child.findOne({_id : req.inputs.childId}).populate({
+        path : "parentId",
+        model : "Parent"
+      });
       if(!child)
         return helper.sendResponse(res,messages.DATA_NOT_FOUND);
       return helper.sendResponse(res,messages.SUCCESSFUL,child);
