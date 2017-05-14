@@ -3,7 +3,7 @@
  */
 
 
-exports = {
+module.exports = {
 
   roomData : {
     roomType : {
@@ -17,6 +17,10 @@ exports = {
       first : "First floor",
       second : "Second floor"
     }
+  },
+  logType : {
+    checkIN : "Check In",
+    checkOut : "Check Out"
   }
 
 };
