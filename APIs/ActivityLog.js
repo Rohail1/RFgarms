@@ -14,6 +14,9 @@ module.exports.setupFunction = function ({config,messages,models,enums},helper,m
       }
       let aggregation = [
         {$match : query},
+        {$sort : {
+          createdAt : -1
+        }},
         {
           $project: {
             yearMonthDay: { $dateToString: { format: "%Y-%m-%d", date: "$timeStamp" } },
@@ -62,7 +65,7 @@ module.exports.setupFunction = function ({config,messages,models,enums},helper,m
     activityLog._id = helper.generateObjectId();
     activityLog.childId = req.inputs.childId;
     activityLog.roomId = req.inputs.roomId;
-    activityLog.timeStamp = Date.now();
+    activityLog.timeStamp = req.inputs.timeStamp ? req.inputs.timeStamp : Date.now();
     let query = {
       roomId : activityLog.roomId,
       startTime : {
@@ -83,7 +86,8 @@ module.exports.setupFunction = function ({config,messages,models,enums},helper,m
   const activityLogByCourse = async (req,res) => {
     try {
       let timeTableQuery = {
-        subject : req.inputs.subject
+        subject : req.inputs.subject,
+        class : req.inputs.class
       };
       let timetable = await models.TimeTable.findOne(timeTableQuery);
       if(!timetable)
@@ -99,6 +103,9 @@ module.exports.setupFunction = function ({config,messages,models,enums},helper,m
       }
       let aggregation = [
         {$match : query},
+        {$sort : {
+          createdAt : -1
+        }},
         {
           $project: {
             yearMonthDay: { $dateToString: { format: "%Y-%m-%d", date: "$timeStamp" } },
@@ -134,10 +141,13 @@ module.exports.setupFunction = function ({config,messages,models,enums},helper,m
           model : "TimeTable"
         }
       ]);
-      return helper.sendResponse(res,messages.SUCCESSFUL,activityLog);
+      let data = {
+        courseDetail : timetable,
+        logs : activityLog
+      }
+      return helper.sendResponse(res,messages.SUCCESSFUL,data);
     }
     catch (ex){
-      console.log('ex',ex);
       return helper.sendError(res,ex)
     }
   };
