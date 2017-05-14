@@ -5,4 +5,6 @@
 module.exports = [
   '/auth/',
   '/public/',
+  '/api/',
+  '/admin/'
 ];

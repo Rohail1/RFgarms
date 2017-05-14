@@ -210,7 +210,7 @@ module.exports.setupFunction = function ({config,messages,models,jwt},helper,mid
     parentsFormMetaData : {
       route : '/parents/meta',
       method : 'GET',
-      prefix : config.API_PREFIX.ADMIN,
+      prefix : config.API_PREFIX.API,
       middlewares : [],
       handler : parentsFormMetaData
     },

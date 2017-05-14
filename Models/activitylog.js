@@ -17,7 +17,7 @@ module.exports = function(Schema){
       ref : "Room"
     },
     timeStamp : {
-      type : String
+      type : Date
     },
     logType : {
       type : String

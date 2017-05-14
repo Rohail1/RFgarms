@@ -23,6 +23,9 @@ module.exports = function(Schema){
     roomId : {
       type : Schema.Types.ObjectId,
       ref : "Room"
+    },
+    subject : {
+      type : String
     }
   },{
     timeStamp : true
