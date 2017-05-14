@@ -23,6 +23,7 @@ module.exports.setupFunction = function ({config,messages,models,enums},helper,m
             time: { $dateToString: { format: "%H:%M:%S:%L", date: "$timeStamp" } },
             childId: 1,
             roomId : 1,
+            logType :1,
             period : 1,
           },
         },
@@ -34,6 +35,8 @@ module.exports.setupFunction = function ({config,messages,models,enums},helper,m
                 time : "$time",
                 childId : "$childId",
                 roomId : "$roomId",
+                dateTime : "$yearMonthDay",
+                logType : "$logType",
                 period : "$period"
               }
             }
@@ -47,9 +50,14 @@ module.exports.setupFunction = function ({config,messages,models,enums},helper,m
         {
           path : "logs.roomId",
         },
+
         {
           path : "logs.period",
           model : "TimeTable"
+        },
+        {
+          path : "logs.childId",
+          model : "Child"
         }
       ]);
       return helper.sendResponse(res,messages.SUCCESSFUL,activityLog);
@@ -153,6 +161,7 @@ module.exports.setupFunction = function ({config,messages,models,enums},helper,m
   };
 
   const timetableCreate = async (req,res) => {
+    console.log('req',req.inputs);
     let timetable = new models.TimeTable();
     timetable._id = helper.generateObjectId();
     timetable.roomId = req.inputs.roomId;
